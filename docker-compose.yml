@@ -1,0 +1,46 @@
+version: '3.2'
+
+volumes:
+    db:
+
+services:
+  tp:
+    build:
+        context: .
+        dockerfile: docker/Dockerfile.kdb
+    image: kdb:latest
+    volumes:
+        # - /mnt/db:/tmp/db
+        - db:/tmp/db
+    expose: 
+        - "6012"
+    network_mode: "host"
+
+  hdb:
+    image: kdb:latest
+    command: ["/data/hdb.q", "-s", "16", "-p", "6013"]
+    volumes:
+        - db:/tmp/db
+          # - /mnt/db:/tmp/db
+    expose: 
+        - "6013"
+    network_mode: "host"
+    depends_on: [tp]
+
+  app:
+    build:
+        context: .
+        dockerfile: docker/app-scratch.docker
+    image: poc:latest
+    ports:
+        - "8080:8080"
+    ulimits:
+        nofile: 200000
+    environment:
+        GIN_MODE: release
+        # TP_HOST: tp
+        # TP_PORT: 6012
+        # HDB_HOST: hdb
+        # HDB_PORT: 6013
+    depends_on: [hdb]
+    network_mode: "host"

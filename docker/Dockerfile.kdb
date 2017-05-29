@@ -1,0 +1,14 @@
+FROM 32bit/ubuntu:16.04
+
+ADD ./kdb /data
+ADD ./q /q
+
+WORKDIR /data
+
+EXPOSE 6012
+
+ENV QHOME /q
+
+ENTRYPOINT ["/q/l32/q"]
+
+CMD ["/data/tp.q", "-s", "16", "-p", "6012"]
